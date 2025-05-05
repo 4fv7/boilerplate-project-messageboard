@@ -3,12 +3,19 @@ require('dotenv').config();
 const express     = require('express');
 const bodyParser  = require('body-parser');
 const cors        = require('cors');
+const mongoose = require('mongoose');
 
 const apiRoutes         = require('./routes/api.js');
 const fccTestingRoutes  = require('./routes/fcctesting.js');
 const runner            = require('./test-runner');
+const helmet = require('helmet'); // Add this
 
 const app = express();
+
+// Add security middleware
+app.use(helmet.frameguard({ action: 'sameorigin' }));
+app.use(helmet.dnsPrefetchControl());
+app.use(helmet.referrerPolicy({ policy: 'same-origin' }));
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
@@ -61,5 +68,12 @@ const listener = app.listen(process.env.PORT || 3000, function () {
     }, 1500);
   }
 });
+
+mongoose.connect(process.env.DB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('Database connected'))
+.catch(err => console.log('Database connection error:', err));
 
 module.exports = app; //for testing
